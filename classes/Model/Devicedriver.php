@@ -39,6 +39,7 @@ class Model_Devicedriver extends Model
                  WHERE d.ID_DEV = '.$idDoor.'
                    AND d."ACTIVE" = 1';
 
+
         try {
             $row = DB::query(Database::SELECT, $sql)
                 ->execute(Database::instance('fb'))
