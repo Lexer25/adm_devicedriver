@@ -1,0 +1,74 @@
+https://chat.deepseek.com/share/kv4fa8kus46wfh8buc
+Device_Base (abstract)
+│   - $connectionString   ← обязательное свойство
+│   - $command            ← обязательное свойство
+│   - $params, $result, $success, $error, $options
+│   - setConnectionString(), setCommand()
+│   - getResult(), isSuccess(), getError()
+│   - execute()  ← abstract
+│   - parseConnectionString()
+│
+├── Device_Artonit   (TS2 + HTTP)
+├── Device_Basip     (UDP/TCP — заглушка)
+└── Device_Perco     (HTTP/TCP — заглушка)
+        ▲
+        │
+   Device_Factory  — создаёт нужный класс
+   
+   
+// 1. Артонит через TS2
+$device = new Device_Artonit(
+    'ts2://127.0.0.1:1967?dev_name=VP3 K3\1&login=3&password=3',
+    'getversion'
+);
+$result = $device->execute();
+echo $result;
+
+// 2. Артонит через HTTP
+$device = new Device_Artonit('http://192.168.1.100', 'getdevicemode');
+echo $device->execute();
+
+// 3. Басип
+$device = new Device_Basip('udp://192.168.1.50:4000', 'opendoor');
+echo $device->execute();
+
+// 4. Перко
+$device = new Device_Perco('http://192.168.1.60', 'getstatus');
+echo $device->execute();
+
+// 5. Через фабрику (тип определяется по схеме)
+$device = Device_Factory::create('ts2://127.0.0.1:1967?dev_name=VP3 K3\1', 'getjmp');
+echo $device->execute();
+
+// 6. Через фабрику с явным типом
+$device = Device_Factory::create(
+    'http://192.168.1.100',
+    'getallinfo',
+    'artonit'
+);
+
+// 7. Универсальная функция для любого устройства
+function runDeviceCommand($connectionString, $command, $type = '')
+{
+    $device = Device_Factory::create($connectionString, $command, $type);
+    try {
+        return array(
+            'success' => true,
+            'result'  => $device->execute(),
+            'error'   => '',
+        );
+    } catch (Exception $e) {
+        return array(
+            'success' => false,
+            'result'  => '',
+            'error'   => $e->getMessage(),
+        );
+    }
+}
+
+$res = runDeviceCommand('ts2://127.0.0.1:1967?dev_name=VP3 K3\1', 'getversion', 'artonit');
+if ($res['success']) {
+    echo $res['result'];
+} else {
+    echo 'Ошибка: ' . $res['error'];
+}
