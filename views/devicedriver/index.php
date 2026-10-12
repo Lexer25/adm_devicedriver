@@ -79,6 +79,20 @@ $result_data    = isset($result['data']) ? $result['data'] : '';
 
 // Блок результата показываем только если что-то реально выполнилось
 $has_result = ($result_status !== 'info' || $result_message !== '' || $result_data !== '');
+
+// Окружение Kohana (Kohana::$environment) — для вывода в подвале панели.
+// Значение задаётся в application/bootstrap.php, а если переменная окружения
+// KOHANA_ENV не задана — остаётся дефолтным (Kohana::DEVELOPMENT).
+$environments = array(
+    Kohana::PRODUCTION  => array('name' => 'PRODUCTION',  'label' => 'label-success'),
+    Kohana::STAGING     => array('name' => 'STAGING',     'label' => 'label-info'),
+    Kohana::TESTING     => array('name' => 'TESTING',     'label' => 'label-primary'),
+    Kohana::DEVELOPMENT => array('name' => 'DEVELOPMENT', 'label' => 'label-warning'),
+);
+
+$environment = isset($environments[Kohana::$environment])
+    ? $environments[Kohana::$environment]
+    : array('name' => 'НЕИЗВЕСТНО', 'label' => 'label-default');
 ?>
 
 <style>
@@ -211,6 +225,13 @@ $has_result = ($result_status !== 'info' || $result_message !== '' || $result_da
         <small class="text-muted">
             <?php echo __('Модуль'); ?>: devicedriver &bull;
             <?php echo __('Версия'); ?>: <?php echo htmlspecialchars(DEVICEDRIVER_VERSION); ?> &bull;
+            <?php echo __('Окружение'); ?>:
+            <span class="label <?php echo $environment['label']; ?>"
+                  title="Kohana::$environment = <?php echo (int) Kohana::$environment; ?>">
+                <?php echo htmlspecialchars($environment['name']); ?>
+                (<?php echo (int) Kohana::$environment; ?>)
+            </span>
+            &bull;
             <?php echo date('d.m.Y H:i:s'); ?>
         </small>
     </div>
